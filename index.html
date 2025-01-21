@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kyotos Lua File Obfuscator</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      color: #333;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.dark-mode {
+      background-color: #121212;
+      color: #f4f4f9;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 50px auto;
+      padding: 40px;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s;
+    }
+
+    .container.dark-mode {
+      background: #1e1e1e;
+    }
+
+    h1 {
+      color: #007bff;
+      text-align: center;
+      font-size: 36px;
+      margin-bottom: 20px;
+    }
+
+    h1.dark-mode {
+      color: #4f8aff;
+    }
+
+    form {
+      text-align: center;
+    }
+
+    label {
+      font-weight: bold;
+      font-size: 18px;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    input[type="file"] {
+      margin: 20px 0;
+      padding: 10px;
+      font-size: 16px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      width: 100%;
+      box-sizing: border-box;
+      background-color: #fff;
+      color: #333;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    input[type="file"].dark-mode {
+      background-color: #333;
+      color: #f4f4f9;
+      border-color: #555;
+    }
+
+    button {
+      padding: 12px 25px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 18px;
+      margin-top: 15px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    button.dark-mode {
+      background-color: #4f8aff;
+    }
+
+    #notification {
+      display: none;
+      margin: 15px 0;
+      padding: 10px;
+      background-color: #28a745;
+      color: white;
+      border-radius: 5px;
+      text-align: center;
+      font-size: 16px;
+    }
+
+    .code-container {
+      margin-top: 30px;
+    }
+
+    .code-section {
+      margin-top: 20px;
+    }
+
+    .code-section h2 {
+      font-size: 20px;
+      margin-bottom: 10px;
+      color: #007bff;
+    }
+
+    .code-section h2.dark-mode {
+      color: #4f8aff;
+    }
+
+    textarea {
+      width: 100%;
+      height: 300px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #f7f7f7;
+      font-family: 'Courier New', monospace;
+      font-size: 16px;
+      resize: none;
+      box-sizing: border-box;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    textarea[readonly] {
+      background-color: #f1f1f1;
+    }
+
+    textarea.dark-mode {
+      background-color: #333;
+      color: #f4f4f9;
+      border-color: #555;
+    }
+
+    a {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #28a745;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      font-size: 16px;
+      text-align: center;
+    }
+
+    a:hover {
+      background-color: #218838;
+    }
+
+    a.dark-mode {
+      background-color: #4f8aff;
+    }
+
+    .dark-mode-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 50px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .dark-mode-toggle:hover {
+      background-color: #0056b3;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px;
+      }
+      h1 {
+        font-size: 28px;
+      }
+      textarea {
+        height: 250px;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="dark-mode-toggle" id="darkModeToggle">🌙 Dark Mode</button>
+
+  <div class="container">
+    <h1>Lua Obfuscator</h1>
+    <form action="/obfuscate" method="POST" enctype="multipart/form-data">
+      <label for="luaFile">Upload Lua File:</label>
+      <input type="file" id="luaFile" name="luaFile" accept=".lua" required>
+      <button type="submit">Obfuscate</button>
+    </form>
+
+    <p id="notification"></p>
+
+    <div class="code-container">
+      <div id="obfuscatedSection" class="code-section">
+        <h2>Obfuscated Code:</h2>
+        <textarea id="obfuscatedCode" readonly></textarea>
+      </div>
+
+      <a id="downloadLink" style="display: none;" download>Download Obfuscated File</a>
+    </div>
+  </div>
+
+  <script>
+    const form = document.querySelector('form');
+    const notification = document.getElementById('notification');
+    const obfuscatedCode = document.getElementById('obfuscatedCode');
+    const downloadLink = document.getElementById('downloadLink');
+    const darkModeToggle = document.getElementById('darkModeToggle');
+
+    let isDarkMode = localStorage.getItem('darkMode') === 'true';
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode', isDarkMode);
+      document.querySelector('.container').classList.toggle('dark-mode', isDarkMode);
+      document.querySelector('h1').classList.toggle('dark-mode', isDarkMode);
+      document.querySelector('h2').classList.toggle('dark-mode', isDarkMode);
+      document.querySelector('textarea').classList.toggle('dark-mode', isDarkMode);
+      document.querySelector('input[type="file"]').classList.toggle('dark-mode', isDarkMode);
+      document.querySelector('button').classList.toggle('dark-mode', isDarkMode);
+      document.querySelector('a').classList.toggle('dark-mode', isDarkMode);
+      darkModeToggle.textContent = isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode';
+    }
+
+    toggleDarkMode();
+
+    darkModeToggle.addEventListener('click', () => {
+      isDarkMode = !isDarkMode;
+      localStorage.setItem('darkMode', isDarkMode);
+      toggleDarkMode();
+    });
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      notification.style.display = 'none';
+      downloadLink.style.display = 'none';
+
+      const fileInput = document.getElementById('luaFile');
+      const file = fileInput.files[0];
+
+      if (!file || !file.name.endsWith('.lua')) {
+        alert('Please upload a valid .lua file.');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('luaFile', file);
+
+      const response = await fetch('/obfuscate', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.text();
+        obfuscatedCode.value = data;
+        downloadLink.href = '/download/obfuscated.lua'; // Set link to download the file
+        downloadLink.style.display = 'block';
+        notification.textContent = 'File obfuscated successfully!';
+        notification.style.backgroundColor = '#28a745';
+        notification.style.display = 'block';
+      } else {
+        const errorText = await response.text();
+        notification.textContent = `Error: ${errorText}`;
+        notification.style.backgroundColor = '#dc3545';
+        notification.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>
